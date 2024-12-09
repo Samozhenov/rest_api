@@ -70,6 +70,11 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, ok := tasks[task.ID]; ok {
+		http.Error(w, "Задача с таким ID уже существует", http.StatusBadRequest)
+		return
+	}
+
 	tasks[task.ID] = task
 
 	w.Header().Set("Content-Type", "application/json")
@@ -87,7 +92,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(task)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -105,7 +110,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	delete(tasks, id)
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
@@ -114,9 +119,7 @@ func main() {
 	// здесь регистрируйте ваши обработчики
 	// ...
 	r.Get("/tasks", getTasks)
-
 	r.Post("/tasks", postTask)
-
 	r.Get("/tasks/{id}", getTask)
 	r.Delete("/tasks/{id}", deleteTask)
 
